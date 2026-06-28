@@ -1,0 +1,18 @@
+export const LOVE_REASONS = [
+  "Her smile",
+  "Her voice",
+  "Your heart",
+  "The way you care",
+  "Your intelligence",
+  "Your beauty",
+  "Your honesty",
+  "The way you believe in me",
+  "Your gentle soul",
+  "The warmth in your eyes",
+  "Your love for God",
+  "The way you pray",
+  "The advice you give me",
+  "The way you look at me",
+  "Your positive mindset",
+  "Strong Christian faith",
+] as const;

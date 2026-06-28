@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+:root {
+  --background: #faf9f7;
+  --foreground: #3d2a32;
+  --cream: #faf9f7;
+  --rose-gold: #c4848f;
+  --soft-pink: #fdf2f4;
+  --lavender: #f5f0fa;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-cream: var(--cream);
+  --color-rose-gold: var(--rose-gold);
+  --color-soft-pink: var(--soft-pink);
+  --color-lavender-50: #faf8fc;
+  --color-lavender-400: #d4b8e8;
+  --font-display: var(--font-geist-sans), "Geist", system-ui, sans-serif;
+  --font-body: var(--font-geist-sans), "Geist", system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), "Geist", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), "Geist Mono", monospace;
+  --font-script: var(--font-script), "Great Vibes", cursive;
+  --font-aquarelle: var(--font-aquarelle), "Aquarelle", cursive;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--cream);
+  color: var(--foreground);
+  font-family: var(--font-sans), "Geist", system-ui, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display,
+.font-body,
+.font-sans {
+  font-family: var(--font-sans), "Geist", system-ui, sans-serif;
+}
+
+.font-script {
+  font-family: var(--font-script), "Great Vibes", cursive;
+}
+
+.font-aquarelle {
+  font-family: var(--font-aquarelle), "Aquarelle", cursive;
+}
+
+::selection {
+  background: rgba(251, 113, 133, 0.2);
+  color: var(--foreground);
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #f9c4d0;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

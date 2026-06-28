@@ -1,0 +1,282 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { LOVE_LETTER_PARAGRAPHS } from "@/lib/data/letter";
+import { section } from "@/lib/styles";
+import { cn } from "@/lib/utils";
+
+const ALL_LINES = [...LOVE_LETTER_PARAGRAPHS];
+const NAME_MARKER = "Rosavelle Neue";
+
+function renderClosingBlock(text: string) {
+  const idx = text.indexOf(NAME_MARKER);
+  let before = idx === -1 ? text : text.slice(0, idx).trim();
+  before = before.replace(/,?\s*my\s*$/i, ",");
+  const after = idx === -1 ? "" : text.slice(idx + NAME_MARKER.length).trim();
+
+  return (
+    <div className="mt-2 border-t border-rose-100/90 pt-6 text-center">
+      <p className="font-sans text-[15px] leading-relaxed text-rose-600/80 md:text-base">
+        {before}
+      </p>
+      <p className="mt-3 font-aquarelle text-[clamp(2rem,7vw,2.75rem)] leading-none text-rose-900">
+        {NAME_MARKER}
+      </p>
+      {after && (
+        <p className="mt-3 font-sans text-lg text-rose-400/90">{after}</p>
+      )}
+    </div>
+  );
+}
+
+function useLineByLineReveal(lines: string[], active: boolean, lineDelay = 1400) {
+  const [revealedCount, setRevealedCount] = useState(0);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    if (!active) return;
+    setRevealedCount(0);
+    setDone(false);
+  }, [active, lines]);
+
+  useEffect(() => {
+    if (!active || done) return;
+
+    if (revealedCount >= lines.length) {
+      setDone(true);
+      return;
+    }
+
+    const delay = revealedCount === 0 ? 500 : lineDelay;
+    const timer = setTimeout(() => {
+      setRevealedCount((c) => c + 1);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [active, revealedCount, done, lines, lineDelay]);
+
+  return {
+    revealedCount,
+    isComplete: done,
+    isRevealing: active && !done,
+  };
+}
+
+function EnvelopeGraphic({
+  isOpen,
+  onOpen,
+}: {
+  isOpen: boolean;
+  onOpen: () => void;
+}) {
+  return (
+    <motion.button
+      onClick={onOpen}
+      disabled={isOpen}
+      className="group relative mx-auto block cursor-pointer rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-4"
+      aria-label="Open love letter"
+      whileHover={!isOpen ? { y: -3 } : {}}
+      whileTap={!isOpen ? { scale: 0.98 } : {}}
+      style={{ perspective: 900 }}
+    >
+      <div className="absolute -bottom-3 left-1/2 h-4 w-[85%] -translate-x-1/2 rounded-[100%] bg-rose-200/30 blur-md transition-opacity group-hover:opacity-80" />
+
+      <motion.div
+        className="relative h-[200px] w-[300px] md:h-[220px] md:w-[340px]"
+        style={{ transformStyle: "preserve-3d" }}
+        animate={isOpen ? { y: -6, scale: 0.98 } : { y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <div className="absolute inset-0 rounded-2xl border border-rose-100/90 bg-gradient-to-b from-white to-rose-50/60 shadow-[0_12px_40px_rgba(190,24,93,0.08)]" />
+
+        <div
+          className="absolute inset-x-0 bottom-0 h-[55%] rounded-b-2xl bg-gradient-to-t from-rose-50/90 to-white/80"
+          style={{ clipPath: "polygon(0 100%, 50% 12%, 100% 100%)" }}
+        />
+
+        <AnimatePresence>
+          {!isOpen && (
+            <motion.div
+              className="absolute left-4 right-4 top-6 h-[72%] rounded-t-lg border border-rose-100/60 bg-[#fffdf9] shadow-sm"
+              initial={{ y: 8 }}
+              animate={{ y: [8, 4, 8] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              exit={{ y: -120, opacity: 0 }}
+            />
+          )}
+        </AnimatePresence>
+
+        <div
+          className="absolute inset-x-0 bottom-0 h-[48%] rounded-b-2xl border-t border-rose-100/50 bg-gradient-to-b from-white/90 to-rose-50/70"
+          style={{ clipPath: "polygon(0 0, 50% 38%, 100% 0, 100% 100%, 0 100%)" }}
+        />
+
+        <motion.div
+          className="absolute inset-x-0 top-0 z-10 h-[52%] origin-top"
+          style={{
+            transformStyle: "preserve-3d",
+            clipPath: "polygon(0 0, 50% 100%, 100% 0)",
+          }}
+          animate={isOpen ? { rotateX: 180, y: -2 } : { rotateX: 0, y: 0 }}
+          transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className="h-full w-full rounded-t-2xl border border-rose-100/80 bg-gradient-to-b from-rose-50 to-rose-100/70 shadow-[inset_0_-1px_0_rgba(255,255,255,0.8)]" />
+        </motion.div>
+
+        <motion.div
+          className="absolute left-1/2 top-[46%] z-20 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-gradient-to-br from-rose-300 to-rose-400 shadow-[0_4px_12px_rgba(244,114,182,0.35)]"
+          animate={isOpen ? { scale: 0, opacity: 0 } : { scale: 1, opacity: 1 }}
+          transition={{ duration: 0.35, delay: isOpen ? 0.1 : 0 }}
+        >
+          <span className="text-sm text-white">♥</span>
+        </motion.div>
+
+        {!isOpen && (
+          <motion.p
+            className="absolute bottom-4 left-0 right-0 z-30 text-center font-sans text-[11px] tracking-wide text-rose-400/70"
+            animate={{ opacity: [0.45, 0.85, 0.45] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            Tap to open
+          </motion.p>
+        )}
+      </motion.div>
+    </motion.button>
+  );
+}
+
+function LetterPaper({ revealedCount }: { revealedCount: number }) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-rose-100/90 bg-[#fffdf9] shadow-[0_16px_48px_rgba(190,24,93,0.07)]">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.28]"
+        aria-hidden="true"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(transparent, transparent 27px, rgba(251,207,232,0.35) 27px, rgba(251,207,232,0.35) 28px)",
+          backgroundPositionY: "56px",
+        }}
+      />
+
+      <div className="relative px-6 py-8 md:px-12 md:py-10">
+        <div className="space-y-5 md:space-y-6">
+          {LOVE_LETTER_PARAGRAPHS.map((paragraph, i) => {
+            if (i >= revealedCount) return null;
+
+            const isClosing = i === LOVE_LETTER_PARAGRAPHS.length - 1;
+
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.75,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                {isClosing ? (
+                  renderClosingBlock(paragraph)
+                ) : (
+                  <p className="text-left font-sans text-[14px] leading-[1.75] text-rose-700/85 md:text-[15px]">
+                    {paragraph}
+                  </p>
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function Envelope() {
+  const [phase, setPhase] = useState<"closed" | "opening" | "letter">("closed");
+  const [writeActive, setWriteActive] = useState(false);
+
+  const handleOpen = useCallback(() => {
+    if (phase !== "closed") return;
+    setPhase("opening");
+    setTimeout(() => {
+      setPhase("letter");
+      setWriteActive(true);
+    }, 900);
+  }, [phase]);
+
+  const { revealedCount } = useLineByLineReveal(ALL_LINES, writeActive);
+
+  const isOpened = phase !== "closed";
+
+  return (
+    <section className={section}>
+      <motion.header
+        className="mb-6 text-center md:mb-8"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={isOpened ? "opened" : "closed"}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <h2
+              className={cn(
+                "font-sans text-[1.75rem] font-semibold leading-tight text-rose-900 md:text-[2.125rem]",
+                isOpened
+                  ? "uppercase tracking-[0.04em]"
+                  : "tracking-[-0.02em]"
+              )}
+            >
+              {isOpened ? "A Letter from your love" : "A Note for you"}
+            </h2>
+            <p
+              className={cn(
+                "mx-auto mt-3 max-w-xs font-sans leading-relaxed text-rose-500/80",
+                isOpened
+                  ? "text-[11px] uppercase tracking-[0.22em]"
+                  : "text-sm"
+              )}
+            >
+              {isOpened ? "Enjoy while you read" : "Open it when you are ready"}
+            </p>
+          </motion.div>
+        </AnimatePresence>
+      </motion.header>
+
+      <div className="mx-auto w-full">
+        <AnimatePresence mode="wait">
+          {phase !== "letter" ? (
+            <motion.div
+              key="envelope"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -24, scale: 0.96 }}
+              transition={{ duration: 0.5 }}
+              className="flex justify-center"
+            >
+              <EnvelopeGraphic
+                isOpen={phase === "opening"}
+                onOpen={handleOpen}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="letter"
+              initial={{ y: 80, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <LetterPaper revealedCount={revealedCount} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </section>
+  );
+}
