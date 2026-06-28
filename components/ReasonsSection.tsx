@@ -10,7 +10,7 @@ export function ReasonsSection() {
     <section className={section}>
       <SectionHeader
         title="The little things that make every moment brighter"
-        className="mb-16 md:mb-20"
+        className="mb-10 md:mb-20"
       />
 
       <div className="mx-auto grid max-w-xl grid-cols-1 gap-2 sm:grid-cols-2">

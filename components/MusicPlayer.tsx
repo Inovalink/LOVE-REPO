@@ -94,10 +94,10 @@ export function MusicPlayer() {
             className="hidden truncate sm:inline"
           >
             {loadError
-              ? "Music unavailable"
+              ? "Add song file"
               : playing
                 ? MUSIC_TITLE
-                : "Play music"}
+                : MUSIC_TITLE}
           </motion.span>
         </AnimatePresence>
       </motion.button>

@@ -38,6 +38,8 @@ interface SectionSlideProps {
   showPrev?: boolean;
   className?: string;
   contentClassName?: string;
+  /** Top-aligned scroll on small screens (long letter, reasons list) */
+  scrollOnMobile?: boolean;
 }
 
 export function SectionSlide({
@@ -49,6 +51,7 @@ export function SectionSlide({
   showPrev = false,
   className,
   contentClassName,
+  scrollOnMobile = false,
 }: SectionSlideProps) {
   const hasNav = (showNext && onNext) || (showPrev && onPrev);
 
@@ -62,13 +65,22 @@ export function SectionSlide({
 
       <div
         className={cn(
-          "absolute inset-x-0 top-0 flex items-center justify-center overflow-y-auto overscroll-contain px-6",
+          "absolute inset-x-0 top-0 min-h-0 overflow-y-auto overscroll-y-contain px-6",
+          scrollOnMobile
+            ? "flex flex-col items-center justify-start touch-pan-y [-webkit-overflow-scrolling:touch] md:justify-center"
+            : "flex items-center justify-center",
           hasNav ? "bottom-[108px]" : "bottom-8",
           showPrev && "pt-14 md:pt-16",
           "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         )}
       >
-        <div className={cn("mx-auto w-full max-w-2xl py-4", contentClassName)}>
+        <div
+          className={cn(
+            "mx-auto w-full max-w-2xl py-4",
+            scrollOnMobile && "pb-6 md:pb-4",
+            contentClassName
+          )}
+        >
           {children}
         </div>
       </div>

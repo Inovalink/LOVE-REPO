@@ -47,7 +47,7 @@ const NEXT_LABELS = [
   "The little things",
   "Our memories",
   "It's been months already",
-  "Why you're amazing",
+  "The Amazing things",
 ] as const;
 
 interface MainExperienceProps {
@@ -105,13 +105,13 @@ export function MainExperience({ onRestart }: MainExperienceProps) {
         );
       case 1:
         return (
-          <SectionSlide {...slideProps(1)} contentClassName="md:max-w-4xl">
+          <SectionSlide {...slideProps(1)} contentClassName="md:max-w-4xl" scrollOnMobile>
             <Envelope />
           </SectionSlide>
         );
       case 2:
         return (
-          <SectionSlide {...slideProps(2)}>
+          <SectionSlide {...slideProps(2)} scrollOnMobile>
             <ReasonsSection />
           </SectionSlide>
         );
