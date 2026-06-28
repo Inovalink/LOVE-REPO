@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { MOTION } from "@/lib/motion";
 
 interface UnlockTransitionProps {
   onComplete: () => void;
@@ -9,18 +10,12 @@ interface UnlockTransitionProps {
 export function UnlockTransition({ onComplete }: UnlockTransitionProps) {
   return (
     <motion.div
-      className="fixed inset-0 z-50"
-      initial={{ backgroundColor: "rgba(255,255,255,0)" }}
-      animate={{
-        backgroundColor: [
-          "rgba(255,255,255,1)",
-          "rgba(255,255,255,1)",
-          "rgba(253, 242, 248,1)",
-          "rgba(253, 242, 248,0)",
-        ],
-      }}
-      transition={{ duration: 2.5, times: [0, 0.3, 0.6, 1], ease: "easeInOut" }}
+      className="pointer-events-none fixed inset-0 z-[60] bg-cream"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 0 }}
+      transition={{ delay: 0.28, ...MOTION.medium }}
       onAnimationComplete={onComplete}
+      aria-hidden="true"
     />
   );
 }

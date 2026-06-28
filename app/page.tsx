@@ -6,13 +6,25 @@ import { Loader } from "@/components/Loader";
 import { CodeEntry } from "@/components/CodeEntry";
 import { UnlockTransition } from "@/components/UnlockTransition";
 import { MainExperience } from "@/components/MainExperience";
+import { MusicPlayer } from "@/components/MusicPlayer";
 import type { AppPhase } from "@/types";
 
 export default function Home() {
   const [phase, setPhase] = useState<AppPhase>("loading");
+  const [musicAutostart, setMusicAutostart] = useState(false);
 
   const handleRestart = useCallback(() => {
     setPhase("loading");
+    setMusicAutostart(false);
+  }, []);
+
+  const handleCodeSuccess = useCallback(() => {
+    setMusicAutostart(true);
+    setPhase("unlock");
+  }, []);
+
+  const handleUnlockComplete = useCallback(() => {
+    setPhase("main");
   }, []);
 
   return (
@@ -23,15 +35,23 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {phase === "code" && (
-        <CodeEntry onSuccess={() => setPhase("unlock")} />
+      <AnimatePresence mode="sync">
+        {phase === "code" && (
+          <CodeEntry key="code" onSuccess={handleCodeSuccess} />
+        )}
+      </AnimatePresence>
+
+      {(phase === "unlock" || phase === "main") && (
+        <MainExperience key="main" isInitialEnter onRestart={handleRestart} />
       )}
 
-      {phase === "unlock" && (
-        <UnlockTransition onComplete={() => setPhase("main")} />
-      )}
+      {phase !== "loading" && <MusicPlayer autostart={musicAutostart} />}
 
-      {phase === "main" && <MainExperience onRestart={handleRestart} />}
+      <AnimatePresence>
+        {phase === "unlock" && (
+          <UnlockTransition key="unlock" onComplete={handleUnlockComplete} />
+        )}
+      </AnimatePresence>
     </>
   );
 }

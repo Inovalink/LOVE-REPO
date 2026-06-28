@@ -1,37 +1,21 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BackgroundEffects } from "@/components/BackgroundEffects";
-import { MusicPlayer } from "@/components/MusicPlayer";
 import { Hero } from "@/components/Hero";
 import { HeartAnimation } from "@/components/HeartAnimation";
-import { SurpriseButton } from "@/components/SurpriseButton";
 import { CustomCursor } from "@/components/CustomCursor";
 import { EasterEggMessage } from "@/components/EasterEggMessage";
 import { SectionSlide, SlideWrapper } from "@/components/SectionSlide";
 import { SectionProgress } from "@/components/SectionProgress";
+import { Envelope } from "@/components/Envelope";
+import { ReasonsSection } from "@/components/ReasonsSection";
+import { Timeline } from "@/components/Timeline";
+import { LoveCounter } from "@/components/LoveCounter";
+import { AmazingCards } from "@/components/AmazingCards";
 import { useEasterEgg } from "@/hooks/useEasterEgg";
 import { useDoubleTap } from "@/hooks/useDoubleTap";
-
-const Envelope = dynamic(() =>
-  import("@/components/Envelope").then((m) => ({ default: m.Envelope }))
-);
-const ReasonsSection = dynamic(() =>
-  import("@/components/ReasonsSection").then((m) => ({
-    default: m.ReasonsSection,
-  }))
-);
-const Timeline = dynamic(() =>
-  import("@/components/Timeline").then((m) => ({ default: m.Timeline }))
-);
-const LoveCounter = dynamic(() =>
-  import("@/components/LoveCounter").then((m) => ({ default: m.LoveCounter }))
-);
-const AmazingCards = dynamic(() =>
-  import("@/components/AmazingCards").then((m) => ({ default: m.AmazingCards }))
-);
 
 const SECTION_LABELS = [
   "Begin",
@@ -52,12 +36,17 @@ const NEXT_LABELS = [
 
 interface MainExperienceProps {
   onRestart: () => void;
+  isInitialEnter?: boolean;
 }
 
-export function MainExperience({ onRestart }: MainExperienceProps) {
+export function MainExperience({
+  onRestart,
+  isInitialEnter = false,
+}: MainExperienceProps) {
   const [step, setStep] = useState(0);
   const [showEasterEgg, setShowEasterEgg] = useState(false);
   const [showHeartBurst, setShowHeartBurst] = useState(false);
+  const playInitialSlide = useRef(isInitialEnter);
 
   const totalSteps = SECTION_LABELS.length;
   const isLastStep = step === totalSteps - 1;
@@ -105,7 +94,11 @@ export function MainExperience({ onRestart }: MainExperienceProps) {
         );
       case 1:
         return (
-          <SectionSlide {...slideProps(1)} contentClassName="md:max-w-4xl" scrollOnMobile>
+          <SectionSlide
+            {...slideProps(1)}
+            contentClassName="md:max-w-4xl max-md:min-h-full max-md:flex max-md:flex-col max-md:py-0"
+            scrollOnMobile
+          >
             <Envelope />
           </SectionSlide>
         );
@@ -117,7 +110,7 @@ export function MainExperience({ onRestart }: MainExperienceProps) {
         );
       case 3:
         return (
-          <SectionSlide {...slideProps(3)}>
+          <SectionSlide {...slideProps(3)} fixedHeaderOnMobile contentClassName="max-md:py-1">
             <Timeline />
           </SectionSlide>
         );
@@ -129,7 +122,13 @@ export function MainExperience({ onRestart }: MainExperienceProps) {
         );
       case 5:
         return (
-          <SectionSlide showNext={false} onPrev={goBack} showPrev>
+          <SectionSlide
+            showNext={false}
+            onPrev={goBack}
+            showPrev
+            scrollOnMobile
+            contentClassName="md:flex md:min-h-full md:flex-col md:items-center md:justify-center"
+          >
             <AmazingCards />
           </SectionSlide>
         );
@@ -139,20 +138,15 @@ export function MainExperience({ onRestart }: MainExperienceProps) {
   };
 
   return (
-    <motion.div
+    <div
       className="fixed inset-0 z-10 h-dvh overflow-hidden"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1 }}
       onTouchEnd={onTouchEnd}
     >
       <BackgroundEffects />
       <CustomCursor />
-      <MusicPlayer />
-      <SurpriseButton />
 
       <main className="relative h-dvh w-full">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={playInitialSlide.current}>
           <SlideWrapper key={step}>{renderStep()}</SlideWrapper>
         </AnimatePresence>
       </main>
@@ -182,6 +176,6 @@ export function MainExperience({ onRestart }: MainExperienceProps) {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }

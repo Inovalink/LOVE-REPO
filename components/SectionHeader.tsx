@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { subtitle, title } from "@/lib/styles";
+import { MOTION } from "@/lib/motion";
 
 interface SectionHeaderProps {
   eyebrow?: string;
@@ -26,10 +27,9 @@ export function SectionHeader({
         align === "center" && "text-center",
         className
       )}
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.08, ...MOTION.medium }}
     >
       {eyebrow && (
         <p className="mb-3 font-sans text-[11px] uppercase tracking-[0.22em] text-rose-400/80">

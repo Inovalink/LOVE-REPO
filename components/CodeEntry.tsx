@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock } from "lucide-react";
+import { Lock, LockOpen } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { SECRET_CODE } from "@/lib/constants";
 import { BackgroundEffects } from "@/components/BackgroundEffects";
 import { cn } from "@/lib/utils";
+import { MOTION } from "@/lib/motion";
+import { startMusic } from "@/lib/music";
 
 interface CodeEntryProps {
   onSuccess: () => void;
@@ -40,26 +41,53 @@ export function CodeEntry({ onSuccess }: CodeEntryProps) {
   const [error, setError] = useState(false);
   const [shake, setShake] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
+  const advancingRef = useRef(false);
+  const onSuccessRef = useRef(onSuccess);
+
+  onSuccessRef.current = onSuccess;
+
+  const advance = () => {
+    if (advancingRef.current) return;
+    if (code.trim().toUpperCase() !== SECRET_CODE.toUpperCase()) {
+      setError(true);
+      setShake(true);
+      window.setTimeout(() => setShake(false), 600);
+      return;
+    }
+
+    advancingRef.current = true;
+    setError(false);
+    setUnlocked(true);
+    startMusic();
+    window.setTimeout(() => onSuccessRef.current(), 520);
+  };
+
+  useEffect(() => {
+    if (advancingRef.current || error) return;
+    if (code.trim().toUpperCase() !== SECRET_CODE.toUpperCase()) return;
+    advance();
+    // Only re-check when the typed code or error state changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code, error]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (code.trim().toUpperCase() === SECRET_CODE.toUpperCase()) {
-      onSuccess();
-    } else {
-      setError(true);
-      setShake(true);
-      setTimeout(() => setShake(false), 600);
-    }
+    advance();
   };
-
-  const canSubmit = code.trim().length > 0;
 
   return (
     <motion.div
       className="fixed inset-0 z-40 flex items-center justify-center px-5 py-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 1.2, ease: "easeOut" }}
+      exit={{
+        opacity: 0,
+        scale: 0.985,
+        filter: "blur(4px)",
+        transition: MOTION.exit,
+      }}
+      transition={MOTION.enter}
     >
       <BackgroundEffects />
 
@@ -86,7 +114,7 @@ export function CodeEntry({ onSuccess }: CodeEntryProps) {
         transition={
           shake
             ? { duration: 0.5 }
-            : { duration: 1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }
+            : { ...MOTION.medium, delay: 0.08 }
         }
       >
         <motion.div
@@ -121,22 +149,41 @@ export function CodeEntry({ onSuccess }: CodeEntryProps) {
                   <motion.div
                     className="relative flex h-[72px] w-[72px] items-center justify-center rounded-full border border-white/70 bg-gradient-to-br from-white/80 to-rose-50/90 shadow-[0_4px_24px_rgba(244,114,182,0.18)]"
                     initial={{ scale: 0, rotate: -20 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.35 }}
+                    animate={{
+                      scale: unlocked ? 1.08 : 1,
+                      rotate: 0,
+                    }}
+                    transition={
+                      unlocked
+                        ? { type: "spring", stiffness: 320, damping: 22 }
+                        : { type: "spring", stiffness: 260, damping: 20, delay: 0.15 }
+                    }
                   >
                     <motion.div
-                      animate={{ y: [0, -1.5, 0] }}
-                      transition={{
-                        duration: 2.5,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
+                      animate={{ y: unlocked ? 0 : [0, -1.5, 0] }}
+                      transition={
+                        unlocked
+                          ? MOTION.fast
+                          : {
+                              duration: 2.5,
+                              repeat: Infinity,
+                              ease: "easeInOut",
+                            }
+                      }
                     >
-                      <Lock
-                        className="h-[26px] w-[26px] text-rose-400/90"
-                        strokeWidth={1.75}
-                        aria-hidden="true"
-                      />
+                      {unlocked ? (
+                        <LockOpen
+                          className="h-[26px] w-[26px] text-rose-500"
+                          strokeWidth={1.75}
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <Lock
+                          className="h-[26px] w-[26px] text-rose-400/90"
+                          strokeWidth={1.75}
+                          aria-hidden="true"
+                        />
+                      )}
                     </motion.div>
                   </motion.div>
                 </div>
@@ -174,24 +221,32 @@ export function CodeEntry({ onSuccess }: CodeEntryProps) {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.85, duration: 0.6 }}
+                  transition={{ delay: 0.35, ...MOTION.fast }}
                   className="relative"
                 >
                   <Input
-                    type="text"
+                    type="password"
                     placeholder="You know what to enter..."
                     value={code}
                     onChange={(e) => {
-                      setCode(e.target.value);
+                      if (unlocked) return;
+                      const val = e.target.value;
+                      setCode(val);
                       setError(false);
+                      if (
+                        val.trim().toUpperCase() === SECRET_CODE.toUpperCase()
+                      ) {
+                        startMusic();
+                      }
                     }}
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
                     aria-label="Secret code"
-                    autoComplete="off"
+                    autoComplete="new-password"
                     spellCheck={false}
+                    disabled={unlocked}
                     className={cn(
-                      "h-[52px] rounded-2xl border-white/70 bg-white/55 text-center text-[15px] tracking-[0.12em] shadow-[inset_0_1px_2px_rgba(255,255,255,0.8)]",
+                      "h-[52px] rounded-2xl border-white/70 bg-white/55 text-center text-[15px] shadow-[inset_0_1px_2px_rgba(255,255,255,0.8)]",
                       "placeholder:tracking-normal placeholder:text-rose-400/55",
                       "focus:border-rose-300/80 focus:bg-white/70 focus:shadow-[0_0_0_4px_rgba(251,207,232,0.35),inset_0_1px_2px_rgba(255,255,255,0.8)]",
                       error &&
@@ -225,39 +280,20 @@ export function CodeEntry({ onSuccess }: CodeEntryProps) {
                   )}
                 </AnimatePresence>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.95, duration: 0.6 }}
-                >
-                  <Button
-                    type="submit"
-                    disabled={!canSubmit}
-                    className={cn(
-                      "relative h-[52px] w-full overflow-hidden rounded-2xl text-[15px] font-medium tracking-wide",
-                      "bg-gradient-to-b from-rose-300 to-rose-400",
-                      "shadow-[0_4px_14px_rgba(244,114,182,0.35),inset_0_1px_0_rgba(255,255,255,0.35)]",
-                      "hover:shadow-[0_6px_20px_rgba(244,114,182,0.45),inset_0_1px_0_rgba(255,255,255,0.35)]",
-                      "disabled:from-rose-200 disabled:to-rose-200 disabled:shadow-none disabled:text-white/70"
-                    )}
-                    size="lg"
-                  >
-                    <span className="relative z-10">Continue</span>
-                    {canSubmit && (
-                      <motion.span
-                        className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
-                        initial={{ x: "-100%" }}
-                        animate={{ x: "200%" }}
-                        transition={{
-                          duration: 2.5,
-                          repeat: Infinity,
-                          repeatDelay: 3,
-                          ease: "easeInOut",
-                        }}
-                      />
-                    )}
-                  </Button>
-                </motion.div>
+                <AnimatePresence>
+                  {unlocked && (
+                    <motion.p
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={MOTION.fast}
+                      className="text-center font-sans text-[13px] tracking-wide text-rose-500/90"
+                    >
+                      Opening for you
+                      <WaitingDots />
+                    </motion.p>
+                  )}
+                </AnimatePresence>
               </form>
             </div>
           </div>

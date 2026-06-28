@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MOTION } from "@/lib/motion";
 
 interface PreviousButtonProps {
   onClick: () => void;
@@ -20,7 +21,7 @@ export function PreviousButton({ onClick, className }: PreviousButtonProps) {
       )}
       initial={{ opacity: 0, x: -8 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay: 0.12, ...MOTION.fast }}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >

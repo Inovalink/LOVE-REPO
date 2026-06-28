@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LOVE_LETTER_PARAGRAPHS } from "@/lib/data/letter";
 import { section } from "@/lib/styles";
 import { cn } from "@/lib/utils";
+import { FixedHeaderContext } from "@/components/SectionSlide";
+import { useFixedSectionHeader } from "@/hooks/useFixedSectionHeader";
 
 const ALL_LINES = [...LOVE_LETTER_PARAGRAPHS];
 const NAME_MARKER = "Rosavelle Neue";
@@ -30,7 +32,47 @@ function renderClosingBlock(text: string) {
   );
 }
 
-function useLineByLineReveal(lines: string[], active: boolean, lineDelay = 1400) {
+function EnvelopeHeader({ isOpened }: { isOpened: boolean }) {
+  return (
+    <header className="text-center">
+      <div className="relative mx-auto min-h-[5.5rem] w-full max-w-sm md:min-h-[5.75rem]">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={isOpened ? "opened" : "closed"}
+            className="absolute inset-x-0 top-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <h2
+              className={cn(
+                "font-sans text-[1.75rem] font-semibold leading-tight text-rose-900 md:text-[2.125rem]",
+                isOpened
+                  ? "uppercase tracking-[0.04em]"
+                  : "tracking-[-0.02em]"
+              )}
+            >
+              {isOpened ? "A Letter from your love" : "A Note for you"}
+            </h2>
+            <p
+              className={cn(
+                "mx-auto mt-2 max-w-xs font-sans leading-relaxed text-rose-500/80 md:mt-3",
+                isOpened
+                  ? "text-[11px] uppercase tracking-[0.22em]"
+                  : "text-sm"
+              )}
+            >
+              {isOpened ? "Enjoy while you read" : "Open it when you are ready"}
+            </p>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </header>
+  );
+}
+
+function useLineByLineReveal(lines: string[], active: boolean, lineDelay = 1100) {
   const [revealedCount, setRevealedCount] = useState(0);
   const [done, setDone] = useState(false);
 
@@ -48,7 +90,7 @@ function useLineByLineReveal(lines: string[], active: boolean, lineDelay = 1400)
       return;
     }
 
-    const delay = revealedCount === 0 ? 500 : lineDelay;
+    const delay = revealedCount === 0 ? 280 : lineDelay;
     const timer = setTimeout(() => {
       setRevealedCount((c) => c + 1);
     }, delay);
@@ -162,28 +204,27 @@ function LetterPaper({ revealedCount }: { revealedCount: number }) {
       <div className="relative px-6 py-8 md:px-12 md:py-10">
         <div className="space-y-5 md:space-y-6">
           {LOVE_LETTER_PARAGRAPHS.map((paragraph, i) => {
-            if (i >= revealedCount) return null;
-
             const isClosing = i === LOVE_LETTER_PARAGRAPHS.length - 1;
+            const revealed = i < revealedCount;
 
             return (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.75,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-              >
-                {isClosing ? (
-                  renderClosingBlock(paragraph)
-                ) : (
-                  <p className="text-left font-sans text-[14px] leading-[1.75] text-rose-700/85 md:text-[15px]">
-                    {paragraph}
-                  </p>
-                )}
-              </motion.div>
+              <div key={i} className="min-h-0">
+                <motion.div
+                  initial={false}
+                  animate={{ opacity: revealed ? 1 : 0 }}
+                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                  className={cn(!revealed && "pointer-events-none select-none")}
+                  aria-hidden={!revealed}
+                >
+                  {isClosing ? (
+                    renderClosingBlock(paragraph)
+                  ) : (
+                    <p className="text-left font-sans text-[14px] leading-[1.75] text-rose-700/85 md:text-[15px]">
+                      {paragraph}
+                    </p>
+                  )}
+                </motion.div>
+              </div>
             );
           })}
         </div>
@@ -192,90 +233,86 @@ function LetterPaper({ revealedCount }: { revealedCount: number }) {
   );
 }
 
+const OPEN_FLAP_MS = 700;
+const ENVELOPE_VANISH_MS = 400;
+
 export function Envelope() {
-  const [phase, setPhase] = useState<"closed" | "opening" | "letter">("closed");
+  const [phase, setPhase] = useState<
+    "closed" | "opening" | "vanishing" | "letter"
+  >("closed");
   const [writeActive, setWriteActive] = useState(false);
 
   const handleOpen = useCallback(() => {
     if (phase !== "closed") return;
     setPhase("opening");
-    setTimeout(() => {
+    window.setTimeout(() => setPhase("vanishing"), OPEN_FLAP_MS);
+    window.setTimeout(() => {
       setPhase("letter");
       setWriteActive(true);
-    }, 900);
+    }, OPEN_FLAP_MS + ENVELOPE_VANISH_MS);
   }, [phase]);
 
   const { revealedCount } = useLineByLineReveal(ALL_LINES, writeActive);
 
-  const isOpened = phase !== "closed";
+  const letterVisible = phase === "letter";
+  const useFixedHeader = useContext(FixedHeaderContext) !== null;
+
+  useFixedSectionHeader(
+    <EnvelopeHeader isOpened={letterVisible} />,
+    [letterVisible]
+  );
 
   return (
-    <section className={section}>
-      <motion.header
-        className="mb-6 text-center md:mb-8"
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={isOpened ? "opened" : "closed"}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <h2
-              className={cn(
-                "font-sans text-[1.75rem] font-semibold leading-tight text-rose-900 md:text-[2.125rem]",
-                isOpened
-                  ? "uppercase tracking-[0.04em]"
-                  : "tracking-[-0.02em]"
-              )}
-            >
-              {isOpened ? "A Letter from your love" : "A Note for you"}
-            </h2>
-            <p
-              className={cn(
-                "mx-auto mt-3 max-w-xs font-sans leading-relaxed text-rose-500/80",
-                isOpened
-                  ? "text-[11px] uppercase tracking-[0.22em]"
-                  : "text-sm"
-              )}
-            >
-              {isOpened ? "Enjoy while you read" : "Open it when you are ready"}
-            </p>
-          </motion.div>
-        </AnimatePresence>
-      </motion.header>
+    <section
+      className={cn(
+        section,
+        useFixedHeader &&
+          !letterVisible &&
+          "max-md:flex max-md:flex-1 max-md:flex-col max-md:items-center max-md:justify-center"
+      )}
+    >
+      {!useFixedHeader && (
+        <div className="mb-6 md:mb-8">
+          <EnvelopeHeader isOpened={letterVisible} />
+        </div>
+      )}
 
-      <div className="mx-auto w-full">
-        <AnimatePresence mode="wait">
-          {phase !== "letter" ? (
-            <motion.div
-              key="envelope"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -24, scale: 0.96 }}
-              transition={{ duration: 0.5 }}
-              className="flex justify-center"
-            >
-              <EnvelopeGraphic
-                isOpen={phase === "opening"}
-                onOpen={handleOpen}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="letter"
-              initial={{ y: 80, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <LetterPaper revealedCount={revealedCount} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <div
+        className={cn(
+          "mx-auto w-full",
+          useFixedHeader && !letterVisible && "max-md:flex max-md:flex-col max-md:items-center max-md:justify-center"
+        )}
+      >
+        {!letterVisible && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={
+              phase === "vanishing"
+                ? { opacity: 0, scale: 0.82, y: -28, filter: "blur(6px)" }
+                : { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }
+            }
+            transition={{
+              duration: phase === "vanishing" ? ENVELOPE_VANISH_MS / 1000 : 0.38,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="flex justify-center"
+          >
+            <EnvelopeGraphic
+              isOpen={phase === "opening" || phase === "vanishing"}
+              onOpen={handleOpen}
+            />
+          </motion.div>
+        )}
+
+        {letterVisible && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <LetterPaper revealedCount={revealedCount} />
+          </motion.div>
+        )}
       </div>
     </section>
   );

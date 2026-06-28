@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MOTION } from "@/lib/motion";
 
 interface ContinueButtonProps {
   onClick: () => void;
@@ -15,14 +16,14 @@ export function ContinueButton({
   onClick,
   label = "Continue",
   className,
-  delay = 0.4,
+  delay = 0.18,
 }: ContinueButtonProps) {
   return (
     <motion.div
       className={cn("flex shrink-0 justify-center pt-6 pb-2", className)}
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay, ...MOTION.medium }}
     >
       <motion.button
         onClick={onClick}

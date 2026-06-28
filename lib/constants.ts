@@ -5,7 +5,7 @@ export const LOVE_START_DATE = new Date("2026-02-14T21:18:00");
 
 export const MUSIC_VOLUME = 0.35;
 
-/** Put your MP3 at public/music/just-the-two-of-us.mp3 */
+/** MP3 at public/music/just-the-two-of-us.mp3 */
 export const MUSIC_SRC = "/music/just-the-two-of-us.mp3";
 export const MUSIC_TITLE = "Just the Two of Us";
 export const MUSIC_ARTIST = "Bill Withers & Grover Washington Jr.";

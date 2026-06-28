@@ -1,37 +1,52 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TIMELINE_EVENTS } from "@/lib/data/timeline";
 import { SectionHeader } from "@/components/SectionHeader";
+import { FixedHeaderContext } from "@/components/SectionSlide";
+import { useFixedSectionHeader } from "@/hooks/useFixedSectionHeader";
 import { card, section } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 import type { TimelineEvent } from "@/types";
+
+const TIMELINE_HEADER = {
+  eyebrow: "Our story",
+  title: "Memory Timeline",
+  description: "The moments that quietly became us.",
+} as const;
 
 function TimelineCard({
   event,
   isActive,
   compact = false,
+  mobile = false,
 }: {
   event: TimelineEvent;
   isActive?: boolean;
   compact?: boolean;
+  mobile?: boolean;
 }) {
   return (
     <div
       className={cn(
         card,
-        "flex w-[300px] flex-col overflow-hidden p-0 transition-all duration-500 md:w-[380px]",
-        isActive
-          ? "shadow-[0_16px_48px_rgba(190,24,93,0.12)] ring-1 ring-rose-200/60"
-          : "shadow-[0_4px_20px_rgba(190,24,93,0.04)]"
+        "flex flex-col overflow-hidden p-0 transition-all duration-500",
+        mobile
+          ? "w-full shadow-[0_12px_40px_rgba(190,24,93,0.1)] ring-1 ring-rose-200/60"
+          : cn(
+              "w-[300px] md:w-[380px]",
+              isActive
+                ? "shadow-[0_16px_48px_rgba(190,24,93,0.12)] ring-1 ring-rose-200/60"
+                : "shadow-[0_4px_20px_rgba(190,24,93,0.04)]"
+            )
       )}
     >
       <div
         className={cn(
           "relative w-full shrink-0 overflow-hidden",
-          isActive ? "h-44 md:h-48" : "h-32 md:h-36"
+          mobile ? "h-28" : isActive ? "h-44 md:h-48" : "h-32 md:h-36"
         )}
       >
         <div
@@ -56,26 +71,39 @@ function TimelineCard({
           aria-hidden="true"
         />
         <span
-          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-base shadow-sm backdrop-blur-sm"
+          className={cn(
+            "absolute right-2.5 top-2.5 flex items-center justify-center rounded-full bg-white/80 shadow-sm backdrop-blur-sm",
+            mobile ? "h-7 w-7 text-sm" : "right-3 top-3 h-9 w-9 text-base"
+          )}
           aria-hidden="true"
         >
           {event.icon}
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
+      <div
+        className={cn(
+          "flex flex-1 flex-col",
+          mobile ? "px-3.5 pb-3.5 pt-3" : "px-5 pb-5 pt-4"
+        )}
+      >
         <h3
           className={cn(
             "font-sans font-medium tracking-[-0.02em] text-rose-900",
-            isActive ? "text-xl" : "text-lg"
+            mobile ? "text-base" : isActive ? "text-xl" : "text-lg"
           )}
         >
           {event.title}
         </h3>
         <p
           className={cn(
-            "mt-2.5 font-sans leading-relaxed text-rose-600/70",
-            compact || !isActive ? "line-clamp-3 text-xs" : "text-sm"
+            "font-sans leading-relaxed text-rose-600/70",
+            mobile
+              ? "mt-1.5 line-clamp-4 text-[11px] leading-[1.55]"
+              : cn(
+                  "mt-2.5",
+                  compact || !isActive ? "line-clamp-3 text-xs" : "text-sm"
+                )
           )}
         >
           {event.description}
@@ -155,7 +183,7 @@ function DesktopCarousel() {
                 zIndex: 10 - distance,
                 filter: `blur(${blur}px)`,
               }}
-              transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
               aria-label={`View memory: ${event.title}`}
               aria-current={isCenter ? "true" : undefined}
             >
@@ -211,57 +239,125 @@ function DesktopCarousel() {
 
 function MobileTimeline() {
   const [active, setActive] = useState(0);
+  const touchStartX = useRef<number | null>(null);
   const total = TIMELINE_EVENTS.length;
   const activeMod = wrapIndex(active, total);
 
-  return (
-    <div className="md:hidden">
-      <div className="relative overflow-hidden">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={active}
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -24 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="flex justify-center"
-          >
-            <TimelineCard event={TIMELINE_EVENTS[activeMod]} isActive />
-          </motion.div>
-        </AnimatePresence>
-      </div>
+  const go = (dir: -1 | 1) => setActive((i) => i + dir);
 
-      <div className="mt-5 flex items-center justify-center gap-3">
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(delta) < 36) return;
+    go(delta < 0 ? 1 : -1);
+  };
+
+  const navBtn =
+    "z-20 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rose-100 bg-white/95 text-rose-500 shadow-[0_2px_12px_rgba(190,24,93,0.08)] backdrop-blur-sm transition-transform active:scale-95";
+
+  return (
+    <div className="w-full md:hidden">
+      <div className="relative mx-auto w-full max-w-[340px] px-1">
         <button
-          onClick={() => setActive((i) => i - 1)}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-rose-100 bg-white/80 text-rose-500"
-          aria-label="Previous"
+          type="button"
+          onClick={() => go(-1)}
+          className={cn(navBtn, "absolute left-0 top-1/2 -translate-y-1/2")}
+          aria-label="Previous memory"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="font-sans text-xs text-rose-400">
-          {activeMod + 1} / {total}
-        </span>
+
         <button
-          onClick={() => setActive((i) => i + 1)}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-rose-100 bg-white/80 text-rose-500"
-          aria-label="Next"
+          type="button"
+          onClick={() => go(1)}
+          className={cn(navBtn, "absolute right-0 top-1/2 -translate-y-1/2")}
+          aria-label="Next memory"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
+
+        <div
+          className="relative mx-auto min-h-[268px] w-full max-w-[248px] touch-pan-y"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <AnimatePresence mode="sync" initial={false}>
+            <motion.div
+              key={activeMod}
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -12 }}
+              transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute inset-x-0 top-0 flex justify-center"
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.14}
+              onDragEnd={(_, info) => {
+                if (info.offset.x < -48) go(1);
+                else if (info.offset.x > 48) go(-1);
+              }}
+            >
+              <TimelineCard
+                event={TIMELINE_EVENTS[activeMod]}
+                isActive
+                mobile
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
+
+      <div className="mt-3 flex items-center justify-center gap-1.5">
+        {TIMELINE_EVENTS.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() =>
+              setActive((current) => {
+                const currentMod = wrapIndex(current, total);
+                const forward = (i - currentMod + total) % total;
+                const backward = (currentMod - i + total) % total;
+                return current + (forward <= backward ? forward : -backward);
+              })
+            }
+            aria-label={`Go to memory ${i + 1}`}
+            className={cn(
+              "rounded-full transition-all duration-300",
+              i === activeMod
+                ? "h-1.5 w-5 bg-rose-400"
+                : "h-1.5 w-1.5 bg-rose-200"
+            )}
+          />
+        ))}
+      </div>
+      <p className="mt-1.5 text-center font-sans text-[11px] text-rose-400/90">
+        {activeMod + 1} / {total}
+      </p>
     </div>
   );
 }
 
 export function Timeline() {
+  const useFixedHeader = useContext(FixedHeaderContext) !== null;
+
+  useFixedSectionHeader(
+    <SectionHeader
+      {...TIMELINE_HEADER}
+      className="mb-0 [&_h2]:text-xl [&_p]:mt-2 [&_p]:text-xs"
+    />,
+    []
+  );
+
   return (
     <section className={section}>
       <SectionHeader
-        eyebrow="Our story"
-        title="Memory Timeline"
-        description="The moments that quietly became us."
-        className="mb-8 md:mb-10"
+        {...TIMELINE_HEADER}
+        className={cn("mb-8 md:mb-10", useFixedHeader && "hidden md:block")}
       />
 
       <DesktopCarousel />

@@ -30,7 +30,7 @@ export function SectionProgress({
             width: i === current ? 20 : 4,
             opacity: i === current ? 1 : i < current ? 0.5 : 0.25,
           }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         />
       ))}
     </div>
