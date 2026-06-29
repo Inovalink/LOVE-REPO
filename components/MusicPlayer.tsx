@@ -103,7 +103,7 @@ export function MusicPlayer({ autostart = false }: MusicPlayerProps) {
           : cn(
               "fixed z-50 h-10",
               isMobile
-                ? "bottom-10 right-4 w-10 justify-center px-0"
+                ? "bottom-8 right-9 w-10 justify-center px-0"
                 : "right-6 top-6 max-w-none px-3.5"
             )
       )}

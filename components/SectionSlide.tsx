@@ -27,6 +27,8 @@ interface SectionSlideProps {
   scrollOnMobile?: boolean;
   /** Pin section title under the back button on mobile (timeline, etc.) */
   fixedHeaderOnMobile?: boolean;
+  /** Extra bottom inset for scroll content on mobile (e.g. timeline pagination strip) */
+  mobileContentBottomClass?: string;
 }
 
 export function SectionSlide({
@@ -40,6 +42,7 @@ export function SectionSlide({
   contentClassName,
   scrollOnMobile = false,
   fixedHeaderOnMobile = false,
+  mobileContentBottomClass,
 }: SectionSlideProps) {
   const hasNav = (showNext && onNext) || (showPrev && onPrev);
   const hasContinue = showNext && !!onNext;
@@ -92,24 +95,24 @@ export function SectionSlide({
         </div>
       )}
 
-      <div className="fixed inset-x-0 bottom-10 z-40 flex h-10 items-center justify-between gap-2 px-4 md:hidden">
-        <div className="flex w-10 shrink-0 items-center justify-start">
+      <div className="fixed inset-x-0 bottom-8 z-40 flex h-10 items-center gap-2 px-4 md:hidden">
+        <div className="flex w-10 shrink-0 items-center justify-start pl-5">
           {showPrev && onPrev && (
             <PreviousButton onClick={onPrev} iconOnly />
           )}
         </div>
-        <div className="flex min-w-0 flex-1 items-center justify-center px-1">
+        <div className="flex h-10 min-w-0 flex-1 items-center justify-center">
           {hasContinue && onNext && (
             <ContinueButton
               onClick={onNext}
               label={nextLabel}
-              className="pt-0 pb-0 [&_button]:max-w-full [&_button]:truncate [&_button]:px-3.5 [&_button]:text-[12px]"
+              className="pt-0 pb-0 [&_button]:h-10 [&_button]:max-w-[min(100%,13rem)] [&_button]:truncate [&_button]:px-3.5 [&_button]:py-0 [&_button]:text-[12px]"
             />
           )}
         </div>
         <div
           ref={mobileNav?.setMusicSlot}
-          className="flex w-10 shrink-0 items-center justify-end"
+          className="flex h-10 w-10 shrink-0 items-center justify-end pr-5"
         />
       </div>
 
@@ -160,9 +163,10 @@ export function SectionSlide({
           scrollOnMobile
             ? "overflow-y-auto overscroll-y-contain overflow-anchor-none flex flex-col items-center justify-start touch-pan-y [-webkit-overflow-scrolling:touch] md:justify-center"
             : fixedHeaderOnMobile
-              ? "max-md:overflow-hidden max-md:flex max-md:items-start max-md:justify-center max-md:pt-1 md:flex md:items-center md:justify-center"
+              ? "max-md:overflow-hidden max-md:flex max-md:items-center max-md:justify-center md:flex md:items-center md:justify-center"
               : "flex items-center justify-center",
-          hasContinue ? "max-md:bottom-[6.5rem] md:bottom-[108px]" : "max-md:bottom-[5rem] md:bottom-8",
+          hasContinue ? "max-md:bottom-[5.5rem] md:bottom-[108px]" : "max-md:bottom-[5.5rem] md:bottom-8",
+          mobileContentBottomClass,
           !scrollOnMobile && "top-0",
           scrollOnMobile && !fixedHeader && "top-0",
           "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"

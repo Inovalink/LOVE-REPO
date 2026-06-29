@@ -46,7 +46,7 @@ function TimelineCard({
       <div
         className={cn(
           "relative w-full shrink-0 overflow-hidden",
-          mobile ? "h-28" : isActive ? "h-44 md:h-48" : "h-32 md:h-36"
+          mobile ? "h-36" : isActive ? "h-44 md:h-48" : "h-32 md:h-36"
         )}
       >
         <div
@@ -84,7 +84,7 @@ function TimelineCard({
       <div
         className={cn(
           "flex flex-1 flex-col",
-          mobile ? "px-3.5 pb-3.5 pt-3" : "px-5 pb-5 pt-4"
+          mobile ? "px-4 pb-4 pt-3.5" : "px-5 pb-5 pt-4"
         )}
       >
         <h3
@@ -99,7 +99,7 @@ function TimelineCard({
           className={cn(
             "font-sans leading-relaxed text-rose-600/70",
             mobile
-              ? "mt-1.5 line-clamp-4 text-[11px] leading-[1.55]"
+              ? "mt-2 line-clamp-5 text-[12px] leading-[1.55]"
               : cn(
                   "mt-2.5",
                   compact || !isActive ? "line-clamp-3 text-xs" : "text-sm"
@@ -237,6 +237,40 @@ function DesktopCarousel() {
   );
 }
 
+function MobileTimelinePagination({
+  activeMod,
+  total,
+  onSelect,
+}: {
+  activeMod: number;
+  total: number;
+  onSelect: (index: number) => void;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center">
+      <div className="flex items-center justify-center gap-1.5">
+        {TIMELINE_EVENTS.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => onSelect(i)}
+            aria-label={`Go to memory ${i + 1}`}
+            className={cn(
+              "rounded-full transition-all duration-300",
+              i === activeMod
+                ? "h-1.5 w-5 bg-rose-400"
+                : "h-1.5 w-1.5 bg-rose-200"
+            )}
+          />
+        ))}
+      </div>
+      <p className="mt-1 text-center font-sans text-[10px] leading-none text-rose-400/90">
+        {activeMod + 1} / {total}
+      </p>
+    </div>
+  );
+}
+
 function MobileTimeline() {
   const [active, setActive] = useState(0);
   const touchStartX = useRef<number | null>(null);
@@ -244,6 +278,15 @@ function MobileTimeline() {
   const activeMod = wrapIndex(active, total);
 
   const go = (dir: -1 | 1) => setActive((i) => i + dir);
+
+  const selectIndex = (index: number) => {
+    setActive((current) => {
+      const currentMod = wrapIndex(current, total);
+      const forward = (index - currentMod + total) % total;
+      const backward = (currentMod - index + total) % total;
+      return current + (forward <= backward ? forward : -backward);
+    });
+  };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -261,84 +304,67 @@ function MobileTimeline() {
     "z-20 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rose-100 bg-white/95 text-rose-500 shadow-[0_2px_12px_rgba(190,24,93,0.08)] backdrop-blur-sm transition-transform active:scale-95";
 
   return (
-    <div className="w-full md:hidden">
-      <div className="relative mx-auto w-full max-w-[340px] px-1">
-        <button
-          type="button"
-          onClick={() => go(-1)}
-          className={cn(navBtn, "absolute left-0 top-1/2 -translate-y-1/2")}
-          aria-label="Previous memory"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
+  <>
+      <div className="fixed inset-x-0 bottom-[5.5rem] z-30 flex justify-center md:hidden">
+        <MobileTimelinePagination
+          activeMod={activeMod}
+          total={total}
+          onSelect={selectIndex}
+        />
+      </div>
 
-        <button
-          type="button"
-          onClick={() => go(1)}
-          className={cn(navBtn, "absolute right-0 top-1/2 -translate-y-1/2")}
-          aria-label="Next memory"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
+      <div className="flex w-full flex-1 items-center justify-center md:hidden">
+        <div className="relative mx-auto w-full max-w-[340px] px-1">
+          <button
+            type="button"
+            onClick={() => go(-1)}
+            className={cn(navBtn, "absolute left-0 top-1/2 -translate-y-1/2")}
+            aria-label="Previous memory"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
 
-        <div
-          className="relative mx-auto min-h-[268px] w-full max-w-[248px] touch-pan-y"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          <AnimatePresence mode="sync" initial={false}>
-            <motion.div
-              key={activeMod}
-              initial={{ opacity: 0, x: 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -12 }}
-              transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-x-0 top-0 flex justify-center"
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.14}
-              onDragEnd={(_, info) => {
-                if (info.offset.x < -48) go(1);
-                else if (info.offset.x > 48) go(-1);
-              }}
-            >
-              <TimelineCard
-                event={TIMELINE_EVENTS[activeMod]}
-                isActive
-                mobile
-              />
-            </motion.div>
-          </AnimatePresence>
+          <button
+            type="button"
+            onClick={() => go(1)}
+            className={cn(navBtn, "absolute right-0 top-1/2 -translate-y-1/2")}
+            aria-label="Next memory"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+
+          <div
+            className="relative mx-auto min-h-[304px] w-full max-w-[260px] touch-pan-y"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            <AnimatePresence mode="sync" initial={false}>
+              <motion.div
+                key={activeMod}
+                initial={{ opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -12 }}
+                transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-x-0 top-0 flex justify-center"
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.14}
+                onDragEnd={(_, info) => {
+                  if (info.offset.x < -48) go(1);
+                  else if (info.offset.x > 48) go(-1);
+                }}
+              >
+                <TimelineCard
+                  event={TIMELINE_EVENTS[activeMod]}
+                  isActive
+                  mobile
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
-
-      <div className="mt-3 flex items-center justify-center gap-1.5">
-        {TIMELINE_EVENTS.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() =>
-              setActive((current) => {
-                const currentMod = wrapIndex(current, total);
-                const forward = (i - currentMod + total) % total;
-                const backward = (currentMod - i + total) % total;
-                return current + (forward <= backward ? forward : -backward);
-              })
-            }
-            aria-label={`Go to memory ${i + 1}`}
-            className={cn(
-              "rounded-full transition-all duration-300",
-              i === activeMod
-                ? "h-1.5 w-5 bg-rose-400"
-                : "h-1.5 w-1.5 bg-rose-200"
-            )}
-          />
-        ))}
-      </div>
-      <p className="mt-1.5 text-center font-sans text-[11px] text-rose-400/90">
-        {activeMod + 1} / {total}
-      </p>
-    </div>
+  </>
   );
 }
 
@@ -354,7 +380,7 @@ export function Timeline() {
   );
 
   return (
-    <section className={section}>
+    <section className={cn(section, "max-md:flex max-md:min-h-full max-md:flex-col")}>
       <SectionHeader
         {...TIMELINE_HEADER}
         className={cn("mb-8 md:mb-10", useFixedHeader && "hidden md:block")}

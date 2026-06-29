@@ -110,7 +110,12 @@ export function MainExperience({
         );
       case 3:
         return (
-          <SectionSlide {...slideProps(3)} fixedHeaderOnMobile contentClassName="max-md:py-1">
+          <SectionSlide
+            {...slideProps(3)}
+            fixedHeaderOnMobile
+            mobileContentBottomClass="max-md:!bottom-[7.75rem]"
+            contentClassName="max-md:flex max-md:min-h-full max-md:flex-col max-md:items-center max-md:justify-center max-md:py-0"
+          >
             <Timeline />
           </SectionSlide>
         );
