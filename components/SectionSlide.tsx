@@ -80,8 +80,14 @@ export function SectionSlide({
       value={useFixedHeaderLayout ? setFixedHeader : null}
     >
     <div className={cn("relative h-dvh w-full", className)}>
+      {showPrev && onPrev && (
+        <div className="fixed left-4 top-5 z-40 hidden md:block md:left-6 md:top-6">
+          <PreviousButton onClick={onPrev} />
+        </div>
+      )}
+
       {showPrev && onPrev && !(useFixedHeaderLayout && fixedHeader) && (
-        <div className="absolute left-0 top-0 z-30 px-4 pt-5 md:px-6 md:pt-6">
+        <div className="absolute left-0 top-0 z-30 px-4 pt-5 md:hidden">
           <PreviousButton onClick={onPrev} />
         </div>
       )}
@@ -90,7 +96,7 @@ export function SectionSlide({
         <div
           ref={headerRef}
           className={cn(
-            "absolute inset-x-0 top-0 z-30 bg-cream/95 px-4 backdrop-blur-sm md:px-6",
+            "absolute inset-x-0 top-0 z-30 bg-cream/95 backdrop-blur-sm",
             "pt-5 pb-3 md:pt-6 md:pb-4",
             fixedHeaderOnMobile && "md:hidden",
             headerScrolled && scrollOnMobile && "border-b border-rose-100/40"
@@ -98,7 +104,7 @@ export function SectionSlide({
         >
           <div
             className={cn(
-              "mx-auto grid w-full max-w-2xl grid-cols-[auto_1fr_auto] items-center gap-x-2 md:gap-x-3",
+              "mx-auto grid w-full max-w-2xl grid-cols-[auto_1fr_auto] items-center gap-x-2 px-4 md:hidden",
               contentClassName
             )}
           >
@@ -111,9 +117,17 @@ export function SectionSlide({
             </div>
             <div className="min-w-0 text-center">{fixedHeader}</div>
             <span
-              className="inline-block h-10 w-10 shrink-0 md:w-[5.5rem]"
+              className="inline-block h-10 w-10 shrink-0"
               aria-hidden="true"
             />
+          </div>
+          <div
+            className={cn(
+              "mx-auto hidden w-full max-w-2xl px-6 text-center md:block",
+              contentClassName
+            )}
+          >
+            {fixedHeader}
           </div>
         </div>
       )}

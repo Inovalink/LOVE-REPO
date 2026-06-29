@@ -84,7 +84,7 @@ export function MusicPlayer({ autostart = false }: MusicPlayerProps) {
           : `Play ${MUSIC_TITLE} by ${MUSIC_ARTIST}`
       }
       className={cn(
-        "fixed right-4 top-5 z-50 flex h-10 max-w-[min(16rem,calc(100vw-2.5rem))] items-center gap-2 rounded-full border border-rose-100 bg-white/80 px-3.5 backdrop-blur-sm md:right-6 md:top-6",
+        "fixed right-4 top-5 z-50 flex h-10 max-w-[min(16rem,calc(100vw-2.5rem))] items-center gap-2 rounded-full border border-rose-100 bg-white/80 px-3.5 backdrop-blur-sm md:right-6 md:top-6 md:max-w-none",
         "font-sans text-[13px] text-rose-700/80 transition-colors hover:bg-white"
       )}
       initial={{ opacity: 0 }}
