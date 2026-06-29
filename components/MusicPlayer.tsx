@@ -103,10 +103,15 @@ export function MusicPlayer({ autostart = false }: MusicPlayerProps) {
           : cn(
               "fixed z-50 h-10",
               isMobile
-                ? "bottom-8 right-9 w-10 justify-center px-0"
+                ? "right-9 w-10 justify-center px-0"
                 : "right-6 top-6 max-w-none px-3.5"
             )
       )}
+      style={
+        !musicSlot && isMobile
+          ? { bottom: "max(1rem, var(--safe-bottom))" }
+          : undefined
+      }
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.85, duration: 0.55 }}

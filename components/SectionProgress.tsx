@@ -7,17 +7,21 @@ interface SectionProgressProps {
   current: number;
   total: number;
   className?: string;
+  embedded?: boolean;
 }
 
 export function SectionProgress({
   current,
   total,
   className,
+  embedded = false,
 }: SectionProgressProps) {
   return (
     <div
       className={cn(
-        "pointer-events-none fixed bottom-3 left-1/2 z-30 flex -translate-x-1/2 gap-1.5",
+        embedded
+          ? "flex justify-center gap-1.5"
+          : "pointer-events-none fixed bottom-3 left-1/2 z-30 flex -translate-x-1/2 gap-1.5",
         className
       )}
       aria-hidden="true"

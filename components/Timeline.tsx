@@ -1,11 +1,13 @@
 "use client";
 
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TIMELINE_EVENTS } from "@/lib/data/timeline";
 import { SectionHeader } from "@/components/SectionHeader";
 import { FixedHeaderContext } from "@/components/SectionSlide";
+import { useMobileNav } from "@/components/MobileNavContext";
 import { useFixedSectionHeader } from "@/hooks/useFixedSectionHeader";
 import { card, section } from "@/lib/styles";
 import { cn } from "@/lib/utils";
@@ -274,8 +276,16 @@ function MobileTimelinePagination({
 function MobileTimeline() {
   const [active, setActive] = useState(0);
   const touchStartX = useRef<number | null>(null);
+  const mobileNav = useMobileNav();
   const total = TIMELINE_EVENTS.length;
   const activeMod = wrapIndex(active, total);
+
+  useEffect(() => {
+    document.documentElement.dataset.mobileSubnav = "timeline";
+    return () => {
+      delete document.documentElement.dataset.mobileSubnav;
+    };
+  }, []);
 
   const go = (dir: -1 | 1) => setActive((i) => i + dir);
 
@@ -303,15 +313,18 @@ function MobileTimeline() {
   const navBtn =
     "z-20 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rose-100 bg-white/95 text-rose-500 shadow-[0_2px_12px_rgba(190,24,93,0.08)] backdrop-blur-sm transition-transform active:scale-95";
 
+  const subNavSlot = mobileNav?.subNavSlot;
+  const pagination = (
+    <MobileTimelinePagination
+      activeMod={activeMod}
+      total={total}
+      onSelect={selectIndex}
+    />
+  );
+
   return (
-  <>
-      <div className="fixed inset-x-0 bottom-[5.5rem] z-30 flex justify-center md:hidden">
-        <MobileTimelinePagination
-          activeMod={activeMod}
-          total={total}
-          onSelect={selectIndex}
-        />
-      </div>
+    <>
+      {subNavSlot && createPortal(pagination, subNavSlot)}
 
       <div className="flex w-full flex-1 items-center justify-center md:hidden">
         <div className="relative mx-auto w-full max-w-[340px] px-1">

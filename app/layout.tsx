@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Great_Vibes } from "next/font/google";
@@ -36,6 +36,12 @@ export const metadata: Metadata = {
     title: "A Love Letter For You",
     description: "Something special awaits...",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

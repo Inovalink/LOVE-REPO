@@ -4,6 +4,7 @@ import { createContext, ReactNode, useLayoutEffect, useRef, useState, useCallbac
 import { motion } from "framer-motion";
 import { ContinueButton } from "@/components/ContinueButton";
 import { PreviousButton } from "@/components/PreviousButton";
+import { SectionProgress } from "@/components/SectionProgress";
 import { useMobileNav } from "@/components/MobileNavContext";
 import { cn } from "@/lib/utils";
 import { slideVariants, MOTION } from "@/lib/motion";
@@ -27,8 +28,6 @@ interface SectionSlideProps {
   scrollOnMobile?: boolean;
   /** Pin section title under the back button on mobile (timeline, etc.) */
   fixedHeaderOnMobile?: boolean;
-  /** Extra bottom inset for scroll content on mobile (e.g. timeline pagination strip) */
-  mobileContentBottomClass?: string;
 }
 
 export function SectionSlide({
@@ -42,7 +41,6 @@ export function SectionSlide({
   contentClassName,
   scrollOnMobile = false,
   fixedHeaderOnMobile = false,
-  mobileContentBottomClass,
 }: SectionSlideProps) {
   const hasNav = (showNext && onNext) || (showPrev && onPrev);
   const hasContinue = showNext && !!onNext;
@@ -55,7 +53,10 @@ export function SectionSlide({
   const mobileNav = useMobileNav();
 
   useEffect(() => {
-    return () => mobileNav?.setMusicSlot(null);
+    return () => {
+      mobileNav?.setMusicSlot(null);
+      mobileNav?.setSubNavSlot(null);
+    };
   }, [mobileNav]);
 
   const handleScroll = useCallback(() => {
@@ -88,32 +89,51 @@ export function SectionSlide({
     <FixedHeaderContext.Provider
       value={useFixedHeaderLayout ? setFixedHeader : null}
     >
-    <div className={cn("relative h-dvh w-full", className)}>
+    <div className={cn("relative app-viewport-h w-full", className)}>
       {showPrev && onPrev && (
         <div className="fixed left-4 top-5 z-40 hidden md:block md:left-6 md:top-6">
           <PreviousButton onClick={onPrev} />
         </div>
       )}
 
-      <div className="fixed inset-x-0 bottom-8 z-40 flex h-10 items-center gap-2 px-4 md:hidden">
-        <div className="flex w-10 shrink-0 items-center justify-start pl-5">
-          {showPrev && onPrev && (
-            <PreviousButton onClick={onPrev} iconOnly />
-          )}
-        </div>
-        <div className="flex h-10 min-w-0 flex-1 items-center justify-center">
-          {hasContinue && onNext && (
-            <ContinueButton
-              onClick={onNext}
-              label={nextLabel}
-              className="pt-0 pb-0 [&_button]:h-10 [&_button]:max-w-[min(100%,13rem)] [&_button]:truncate [&_button]:px-3.5 [&_button]:py-0 [&_button]:text-[12px]"
-            />
-          )}
-        </div>
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 flex flex-col md:hidden"
+        style={{ paddingBottom: "var(--mobile-dock-pad)" }}
+      >
         <div
-          ref={mobileNav?.setMusicSlot}
-          className="flex h-10 w-10 shrink-0 items-center justify-end pr-5"
+          ref={mobileNav?.setSubNavSlot}
+          className="flex min-h-0 items-center justify-center empty:hidden [&:not(:empty)]:pb-2"
         />
+
+        <div className="flex h-10 items-center gap-2 px-4">
+          <div className="flex w-10 shrink-0 items-center justify-start pl-5">
+            {showPrev && onPrev && (
+              <PreviousButton onClick={onPrev} iconOnly />
+            )}
+          </div>
+          <div className="flex h-10 min-w-0 flex-1 items-center justify-center">
+            {hasContinue && onNext && (
+              <ContinueButton
+                onClick={onNext}
+                label={nextLabel}
+                className="pt-0 pb-0 [&_button]:h-10 [&_button]:max-w-[min(100%,13rem)] [&_button]:truncate [&_button]:px-3.5 [&_button]:py-0 [&_button]:text-[12px]"
+              />
+            )}
+          </div>
+          <div
+            ref={mobileNav?.setMusicSlot}
+            className="flex h-10 w-10 shrink-0 items-center justify-end pr-5"
+          />
+        </div>
+
+        {mobileNav?.sectionProgress && (
+          <SectionProgress
+            embedded
+            current={mobileNav.sectionProgress.current}
+            total={mobileNav.sectionProgress.total}
+            className="pt-2"
+          />
+        )}
       </div>
 
       {useFixedHeaderLayout && fixedHeader && (
@@ -121,7 +141,7 @@ export function SectionSlide({
           ref={headerRef}
           className={cn(
             "absolute inset-x-0 top-0 z-30 bg-cream/95 backdrop-blur-sm",
-            "pt-5 pb-3 md:pt-6 md:pb-4",
+            "pt-safe pb-3 md:pt-6 md:pb-4",
             fixedHeaderOnMobile && "md:hidden",
             headerScrolled && scrollOnMobile && "border-b border-rose-100/40"
           )}
@@ -165,8 +185,7 @@ export function SectionSlide({
             : fixedHeaderOnMobile
               ? "max-md:overflow-hidden max-md:flex max-md:items-center max-md:justify-center md:flex md:items-center md:justify-center"
               : "flex items-center justify-center",
-          hasContinue ? "max-md:bottom-[5.5rem] md:bottom-[108px]" : "max-md:bottom-[5.5rem] md:bottom-8",
-          mobileContentBottomClass,
+          hasContinue ? "max-md:mobile-content-bottom md:bottom-[108px]" : "max-md:mobile-content-bottom md:bottom-8",
           !scrollOnMobile && "top-0",
           scrollOnMobile && !fixedHeader && "top-0",
           "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -219,7 +238,7 @@ export function SectionSlide({
 export function SlideWrapper({ children }: { children: ReactNode }) {
   return (
     <motion.div
-      className="absolute inset-0 z-20 h-dvh w-full"
+      className="absolute inset-0 z-20 app-viewport-h w-full"
       variants={slideVariants}
       initial="initial"
       animate="animate"

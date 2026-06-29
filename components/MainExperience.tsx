@@ -9,6 +9,7 @@ import { CustomCursor } from "@/components/CustomCursor";
 import { EasterEggMessage } from "@/components/EasterEggMessage";
 import { SectionSlide, SlideWrapper } from "@/components/SectionSlide";
 import { SectionProgress } from "@/components/SectionProgress";
+import { useMobileNav } from "@/components/MobileNavContext";
 import { Envelope } from "@/components/Envelope";
 import { ReasonsSection } from "@/components/ReasonsSection";
 import { Timeline } from "@/components/Timeline";
@@ -47,6 +48,7 @@ export function MainExperience({
   const [showEasterEgg, setShowEasterEgg] = useState(false);
   const [showHeartBurst, setShowHeartBurst] = useState(false);
   const playInitialSlide = useRef(isInitialEnter);
+  const mobileNav = useMobileNav();
 
   const totalSteps = SECTION_LABELS.length;
   const isLastStep = step === totalSteps - 1;
@@ -59,6 +61,15 @@ export function MainExperience({
       document.body.style.overflow = "";
     };
   }, []);
+
+  useEffect(() => {
+    if (!mobileNav || isLastStep) {
+      mobileNav?.setSectionProgress(null);
+      return;
+    }
+    mobileNav.setSectionProgress({ current: step, total: totalSteps });
+    return () => mobileNav.setSectionProgress(null);
+  }, [mobileNav, step, totalSteps, isLastStep]);
 
   const revealEasterEgg = useCallback(() => setShowEasterEgg(true), []);
   useEasterEgg(revealEasterEgg);
@@ -113,7 +124,6 @@ export function MainExperience({
           <SectionSlide
             {...slideProps(3)}
             fixedHeaderOnMobile
-            mobileContentBottomClass="max-md:!bottom-[7.75rem]"
             contentClassName="max-md:flex max-md:min-h-full max-md:flex-col max-md:items-center max-md:justify-center max-md:py-0"
           >
             <Timeline />
@@ -144,19 +154,25 @@ export function MainExperience({
 
   return (
     <div
-      className="fixed inset-0 z-10 h-dvh overflow-hidden"
+      className="fixed inset-0 z-10 app-viewport-h overflow-hidden"
       onTouchEnd={onTouchEnd}
     >
       <BackgroundEffects />
       <CustomCursor />
 
-      <main className="relative h-dvh w-full">
+      <main className="relative app-viewport-h w-full">
         <AnimatePresence mode="wait" initial={playInitialSlide.current}>
           <SlideWrapper key={step}>{renderStep()}</SlideWrapper>
         </AnimatePresence>
       </main>
 
-      {!isLastStep && <SectionProgress current={step} total={totalSteps} />}
+      {!isLastStep && (
+        <SectionProgress
+          current={step}
+          total={totalSteps}
+          className="hidden md:flex"
+        />
+      )}
 
       <EasterEggMessage
         show={showEasterEgg}
