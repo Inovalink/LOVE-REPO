@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Music, Pause } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MUSIC_ARTIST, MUSIC_TITLE, MUSIC_VOLUME } from "@/lib/constants";
 import { getMusicAudio, startMusic } from "@/lib/music";
+import { useMobileNav } from "@/components/MobileNavContext";
 import { cn } from "@/lib/utils";
 
 interface MusicPlayerProps {
@@ -14,7 +16,18 @@ interface MusicPlayerProps {
 export function MusicPlayer({ autostart = false }: MusicPlayerProps) {
   const [playing, setPlaying] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const autostarted = useRef(false);
+  const mobileNav = useMobileNav();
+  const musicSlot = isMobile ? mobileNav?.musicSlot : null;
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const sync = () => setIsMobile(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
 
   useEffect(() => {
     const audio = getMusicAudio();
@@ -69,7 +82,7 @@ export function MusicPlayer({ autostart = false }: MusicPlayerProps) {
     }
   };
 
-  return (
+  const button = (
     <motion.button
       onClick={toggleMusic}
       disabled={loadError}
@@ -84,8 +97,15 @@ export function MusicPlayer({ autostart = false }: MusicPlayerProps) {
           : `Play ${MUSIC_TITLE} by ${MUSIC_ARTIST}`
       }
       className={cn(
-        "fixed right-4 top-5 z-50 flex h-10 max-w-[min(16rem,calc(100vw-2.5rem))] items-center gap-2 rounded-full border border-rose-100 bg-white/80 px-3.5 backdrop-blur-sm md:right-6 md:top-6 md:max-w-none",
-        "font-sans text-[13px] text-rose-700/80 transition-colors hover:bg-white"
+        "flex items-center gap-2 rounded-full border border-rose-100 bg-white/80 font-sans text-[13px] text-rose-700/80 backdrop-blur-sm transition-colors hover:bg-white",
+        musicSlot
+          ? "h-10 w-10 shrink-0 justify-center"
+          : cn(
+              "fixed z-50 h-10",
+              isMobile
+                ? "bottom-10 right-4 w-10 justify-center px-0"
+                : "right-6 top-6 max-w-none px-3.5"
+            )
       )}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -104,17 +124,25 @@ export function MusicPlayer({ autostart = false }: MusicPlayerProps) {
           <Music className="h-3 w-3" />
         )}
       </span>
-      <AnimatePresence mode="wait">
-        <motion.span
-          key={playing ? "on" : "off"}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="hidden truncate sm:inline"
-        >
-          {loadError ? "Add song file" : MUSIC_TITLE}
-        </motion.span>
-      </AnimatePresence>
+      {!musicSlot && !isMobile && (
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={playing ? "on" : "off"}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="truncate"
+          >
+            {loadError ? "Add song file" : MUSIC_TITLE}
+          </motion.span>
+        </AnimatePresence>
+      )}
     </motion.button>
   );
+
+  if (musicSlot) {
+    return createPortal(button, musicSlot);
+  }
+
+  return button;
 }

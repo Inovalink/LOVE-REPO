@@ -1,9 +1,10 @@
 "use client";
 
-import { createContext, ReactNode, useLayoutEffect, useRef, useState, useCallback } from "react";
+import { createContext, ReactNode, useLayoutEffect, useRef, useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ContinueButton } from "@/components/ContinueButton";
 import { PreviousButton } from "@/components/PreviousButton";
+import { useMobileNav } from "@/components/MobileNavContext";
 import { cn } from "@/lib/utils";
 import { slideVariants, MOTION } from "@/lib/motion";
 
@@ -48,6 +49,11 @@ export function SectionSlide({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState(0);
   const [headerScrolled, setHeaderScrolled] = useState(false);
+  const mobileNav = useMobileNav();
+
+  useEffect(() => {
+    return () => mobileNav?.setMusicSlot(null);
+  }, [mobileNav]);
 
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
@@ -86,11 +92,26 @@ export function SectionSlide({
         </div>
       )}
 
-      {showPrev && onPrev && !(useFixedHeaderLayout && fixedHeader) && (
-        <div className="absolute left-0 top-0 z-30 px-4 pt-5 md:hidden">
-          <PreviousButton onClick={onPrev} />
+      <div className="fixed inset-x-0 bottom-10 z-40 flex h-10 items-center justify-between gap-2 px-4 md:hidden">
+        <div className="flex w-10 shrink-0 items-center justify-start">
+          {showPrev && onPrev && (
+            <PreviousButton onClick={onPrev} iconOnly />
+          )}
         </div>
-      )}
+        <div className="flex min-w-0 flex-1 items-center justify-center px-1">
+          {hasContinue && onNext && (
+            <ContinueButton
+              onClick={onNext}
+              label={nextLabel}
+              className="pt-0 pb-0 [&_button]:max-w-full [&_button]:truncate [&_button]:px-3.5 [&_button]:text-[12px]"
+            />
+          )}
+        </div>
+        <div
+          ref={mobileNav?.setMusicSlot}
+          className="flex w-10 shrink-0 items-center justify-end"
+        />
+      </div>
 
       {useFixedHeaderLayout && fixedHeader && (
         <div
@@ -102,19 +123,8 @@ export function SectionSlide({
             headerScrolled && scrollOnMobile && "border-b border-rose-100/40"
           )}
         >
-          <div className="mx-auto grid w-full max-w-2xl grid-cols-[auto_1fr_auto] items-center gap-x-2 px-4 md:hidden">
-            <div className="flex shrink-0 items-center justify-start">
-              {showPrev && onPrev ? (
-                <PreviousButton onClick={onPrev} className="shrink-0" />
-              ) : (
-                <span className="inline-block w-[4.25rem]" aria-hidden="true" />
-              )}
-            </div>
-            <div className="min-w-0 text-center">{fixedHeader}</div>
-            <span
-              className="inline-block h-10 w-10 shrink-0"
-              aria-hidden="true"
-            />
+          <div className="mx-auto w-full max-w-2xl px-4 text-center md:hidden">
+            {fixedHeader}
           </div>
           <div className="mx-auto hidden w-full max-w-2xl px-6 text-center md:block">
             {fixedHeader}
@@ -152,9 +162,8 @@ export function SectionSlide({
             : fixedHeaderOnMobile
               ? "max-md:overflow-hidden max-md:flex max-md:items-start max-md:justify-center max-md:pt-1 md:flex md:items-center md:justify-center"
               : "flex items-center justify-center",
-          hasContinue ? "bottom-[108px]" : "bottom-8",
+          hasContinue ? "max-md:bottom-[6.5rem] md:bottom-[108px]" : "max-md:bottom-[5rem] md:bottom-8",
           !scrollOnMobile && "top-0",
-          scrollOnMobile && !fixedHeader && showPrev && "pt-14 md:pt-16",
           scrollOnMobile && !fixedHeader && "top-0",
           "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         )}
@@ -187,7 +196,7 @@ export function SectionSlide({
             />
           </div>
 
-          <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-[72px]">
+          <div className="absolute inset-x-0 bottom-0 z-10 hidden px-6 pb-[72px] md:block">
             <div className="flex items-center justify-center">
               <ContinueButton
                 onClick={onNext!}

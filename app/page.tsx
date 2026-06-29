@@ -7,6 +7,7 @@ import { CodeEntry } from "@/components/CodeEntry";
 import { UnlockTransition } from "@/components/UnlockTransition";
 import { MainExperience } from "@/components/MainExperience";
 import { MusicPlayer } from "@/components/MusicPlayer";
+import { MobileNavProvider } from "@/components/MobileNavContext";
 import type { AppPhase } from "@/types";
 
 export default function Home() {
@@ -28,7 +29,7 @@ export default function Home() {
   }, []);
 
   return (
-    <>
+    <MobileNavProvider>
       <AnimatePresence mode="wait">
         {phase === "loading" && (
           <Loader key="loader" onComplete={() => setPhase("code")} />
@@ -52,6 +53,6 @@ export default function Home() {
           <UnlockTransition key="unlock" onComplete={handleUnlockComplete} />
         )}
       </AnimatePresence>
-    </>
+    </MobileNavProvider>
   );
 }
