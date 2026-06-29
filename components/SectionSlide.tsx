@@ -102,12 +102,7 @@ export function SectionSlide({
             headerScrolled && scrollOnMobile && "border-b border-rose-100/40"
           )}
         >
-          <div
-            className={cn(
-              "mx-auto grid w-full max-w-2xl grid-cols-[auto_1fr_auto] items-center gap-x-2 px-4 md:hidden",
-              contentClassName
-            )}
-          >
+          <div className="mx-auto grid w-full max-w-2xl grid-cols-[auto_1fr_auto] items-center gap-x-2 px-4 md:hidden">
             <div className="flex shrink-0 items-center justify-start">
               {showPrev && onPrev ? (
                 <PreviousButton onClick={onPrev} className="shrink-0" />
@@ -121,12 +116,7 @@ export function SectionSlide({
               aria-hidden="true"
             />
           </div>
-          <div
-            className={cn(
-              "mx-auto hidden w-full max-w-2xl px-6 text-center md:block",
-              contentClassName
-            )}
-          >
+          <div className="mx-auto hidden w-full max-w-2xl px-6 text-center md:block">
             {fixedHeader}
           </div>
         </div>
