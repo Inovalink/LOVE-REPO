@@ -266,23 +266,24 @@ export function Envelope() {
     <section
       className={cn(
         section,
+        useFixedHeader && "w-full",
         useFixedHeader &&
           !letterVisible &&
-          "max-md:flex max-md:flex-1 max-md:flex-col max-md:items-center max-md:justify-center"
+          "max-md:flex max-md:min-h-[60svh] max-md:flex-col max-md:items-center max-md:justify-center",
+        useFixedHeader && letterVisible && "max-md:w-full"
       )}
     >
-      {!useFixedHeader && (
+      {!useFixedHeader ? (
         <div className="mb-6 md:mb-8">
+          <EnvelopeHeader isOpened={letterVisible} />
+        </div>
+      ) : (
+        <div className="mb-6 hidden md:block">
           <EnvelopeHeader isOpened={letterVisible} />
         </div>
       )}
 
-      <div
-        className={cn(
-          "mx-auto w-full",
-          useFixedHeader && !letterVisible && "max-md:flex max-md:flex-col max-md:items-center max-md:justify-center"
-        )}
-      >
+      <div className="mx-auto w-full">
         {!letterVisible && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -309,6 +310,7 @@ export function Envelope() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="max-md:pt-1"
           >
             <LetterPaper revealedCount={revealedCount} />
           </motion.div>

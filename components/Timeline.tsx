@@ -249,26 +249,21 @@ function MobileTimelinePagination({
   onSelect: (index: number) => void;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="flex items-center justify-center gap-1.5">
-        {TIMELINE_EVENTS.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => onSelect(i)}
-            aria-label={`Go to memory ${i + 1}`}
-            className={cn(
-              "rounded-full transition-all duration-300",
-              i === activeMod
-                ? "h-1.5 w-5 bg-rose-400"
-                : "h-1.5 w-1.5 bg-rose-200"
-            )}
-          />
-        ))}
-      </div>
-      <p className="mt-1 text-center font-sans text-[10px] leading-none text-rose-400/90">
-        {activeMod + 1} / {total}
-      </p>
+    <div className="flex items-center justify-center gap-1.5">
+      {TIMELINE_EVENTS.map((_, i) => (
+        <button
+          key={i}
+          type="button"
+          onClick={() => onSelect(i)}
+          aria-label={`Go to memory ${i + 1}`}
+          className={cn(
+            "rounded-full transition-all duration-300",
+            i === activeMod
+              ? "h-1.5 w-5 bg-rose-400"
+              : "h-1.5 w-1.5 bg-rose-200"
+          )}
+        />
+      ))}
     </div>
   );
 }
@@ -326,7 +321,7 @@ function MobileTimeline() {
     <>
       {subNavSlot && createPortal(pagination, subNavSlot)}
 
-      <div className="flex w-full flex-1 items-center justify-center md:hidden">
+      <div className="flex w-full flex-1 items-center justify-center max-md:pt-4 md:hidden">
         <div className="relative mx-auto w-full max-w-[340px] px-1">
           <button
             type="button"

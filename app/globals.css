@@ -11,7 +11,10 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
-  --mobile-dock-pad: max(0.5rem, var(--safe-bottom));
+  --mobile-dock-lift: 1.125rem;
+  --mobile-dock-pad: calc(
+    var(--mobile-dock-lift) + max(0.25rem, var(--safe-bottom))
+  );
   --mobile-progress-zone: 1.125rem;
   --mobile-nav-zone: 2.5rem;
   --mobile-dock-gap: 0.375rem;
@@ -21,21 +24,13 @@
     var(--mobile-dock-pad) + var(--mobile-progress-zone) + var(--mobile-dock-gap) +
       var(--mobile-nav-zone)
   );
-  --mobile-nav-bottom: calc(
-    var(--mobile-dock-pad) + var(--mobile-progress-zone) + var(--mobile-dock-gap)
-  );
   --mobile-content-bottom: calc(
     var(--mobile-dock-h) + var(--mobile-subnav-zone) + var(--mobile-content-pad)
   );
 }
 
 html[data-mobile-subnav="timeline"] {
-  --mobile-subnav-zone: 2rem;
   --mobile-dock-gap: 0.5rem;
-  --mobile-content-bottom: calc(
-    var(--mobile-dock-h) + var(--mobile-subnav-zone) + var(--mobile-content-pad) +
-      var(--mobile-dock-gap)
-  );
 }
 
 @theme inline {
@@ -125,5 +120,11 @@ body {
 
   .mobile-content-bottom {
     bottom: var(--mobile-content-bottom);
+  }
+
+  @media (max-width: 767px) {
+    .mobile-scroll-pane {
+      top: var(--slide-scroll-top, 0px);
+    }
   }
 }

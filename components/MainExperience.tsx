@@ -9,6 +9,7 @@ import { CustomCursor } from "@/components/CustomCursor";
 import { EasterEggMessage } from "@/components/EasterEggMessage";
 import { SectionSlide, SlideWrapper } from "@/components/SectionSlide";
 import { SectionProgress } from "@/components/SectionProgress";
+import { MobileBottomDock } from "@/components/MobileBottomDock";
 import { useMobileNav } from "@/components/MobileNavContext";
 import { Envelope } from "@/components/Envelope";
 import { ReasonsSection } from "@/components/ReasonsSection";
@@ -78,7 +79,15 @@ export function MainExperience({
     setShowHeartBurst(true);
     setTimeout(() => setShowHeartBurst(false), 1500);
   }, []);
+
   const onTouchEnd = useDoubleTap(handleDoubleTap);
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if ((e.target as HTMLElement).closest("[data-scroll-area]")) return;
+      onTouchEnd();
+    },
+    [onTouchEnd]
+  );
 
   const goNext = useCallback(() => {
     setStep((s) => Math.min(s + 1, totalSteps - 1));
@@ -107,7 +116,7 @@ export function MainExperience({
         return (
           <SectionSlide
             {...slideProps(1)}
-            contentClassName="md:max-w-4xl max-md:min-h-full max-md:flex max-md:flex-col max-md:py-0"
+            contentClassName="md:max-w-4xl max-md:py-0"
             scrollOnMobile
           >
             <Envelope />
@@ -124,7 +133,7 @@ export function MainExperience({
           <SectionSlide
             {...slideProps(3)}
             fixedHeaderOnMobile
-            contentClassName="max-md:flex max-md:min-h-full max-md:flex-col max-md:items-center max-md:justify-center max-md:py-0"
+            contentClassName="max-md:flex max-md:min-h-full max-md:flex-col max-md:items-center max-md:justify-start max-md:pt-8 max-md:py-0"
           >
             <Timeline />
           </SectionSlide>
@@ -155,7 +164,7 @@ export function MainExperience({
   return (
     <div
       className="fixed inset-0 z-10 app-viewport-h overflow-hidden"
-      onTouchEnd={onTouchEnd}
+      onTouchEnd={handleTouchEnd}
     >
       <BackgroundEffects />
       <CustomCursor />
@@ -165,6 +174,14 @@ export function MainExperience({
           <SlideWrapper key={step}>{renderStep()}</SlideWrapper>
         </AnimatePresence>
       </main>
+
+      <MobileBottomDock
+        showPrev={step > 0}
+        onPrev={goBack}
+        showContinue={!isLastStep}
+        onNext={goNext}
+        nextLabel={NEXT_LABELS[step]}
+      />
 
       {!isLastStep && (
         <SectionProgress

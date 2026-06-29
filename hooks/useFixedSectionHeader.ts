@@ -1,12 +1,12 @@
 "use client";
 
-import { ReactNode, useContext, useEffect } from "react";
+import { ReactNode, useContext, useLayoutEffect } from "react";
 import { FixedHeaderContext } from "@/components/SectionSlide";
 
 export function useFixedSectionHeader(header: ReactNode, deps: unknown[] = []) {
   const setFixedHeader = useContext(FixedHeaderContext);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!setFixedHeader) return;
     setFixedHeader(header);
     return () => setFixedHeader(null);

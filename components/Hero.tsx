@@ -7,7 +7,7 @@ import { MOTION } from "@/lib/motion";
 
 export function Hero() {
   return (
-    <div className="relative px-2 text-center">
+    <div className="relative px-2 pt-2 text-center max-md:pt-4">
       <div
         className="pointer-events-none absolute inset-0 flex items-center justify-center"
         aria-hidden="true"

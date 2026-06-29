@@ -7,6 +7,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { FixedHeaderContext } from "@/components/SectionSlide";
 import { useFixedSectionHeader } from "@/hooks/useFixedSectionHeader";
 import { card, section } from "@/lib/styles";
+import { cn } from "@/lib/utils";
 import { MOTION } from "@/lib/motion";
 
 const REASONS_TITLE = "The little things that make every moment brighter";
@@ -15,17 +16,22 @@ export function ReasonsSection() {
   const useFixedHeader = useContext(FixedHeaderContext) !== null;
 
   useFixedSectionHeader(
-    <SectionHeader title={REASONS_TITLE} className="mb-0" />,
+    <SectionHeader title={REASONS_TITLE} className="mb-0 max-md:[&_h2]:text-xl" />,
     []
   );
 
   return (
-    <section className={section}>
-      {!useFixedHeader && (
+    <section className={cn(section, useFixedHeader && "w-full")}>
+      {!useFixedHeader ? (
         <SectionHeader title={REASONS_TITLE} className="mb-10 md:mb-20" />
+      ) : (
+        <SectionHeader
+          title={REASONS_TITLE}
+          className="mb-10 hidden md:mb-20 md:block"
+        />
       )}
 
-      <div className="mx-auto grid max-w-xl grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="mx-auto grid w-full max-w-xl grid-cols-1 gap-2 max-md:pb-2 sm:grid-cols-2">
         {LOVE_REASONS.map((reason, i) => (
           <motion.div
             key={reason}

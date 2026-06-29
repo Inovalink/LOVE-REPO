@@ -107,11 +107,6 @@ export function MusicPlayer({ autostart = false }: MusicPlayerProps) {
                 : "right-6 top-6 max-w-none px-3.5"
             )
       )}
-      style={
-        !musicSlot && isMobile
-          ? { bottom: "max(1rem, var(--safe-bottom))" }
-          : undefined
-      }
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.85, duration: 0.55 }}
